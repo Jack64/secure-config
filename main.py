@@ -138,6 +138,8 @@ def main():
     
     subparsers = parser.add_subparsers(dest='command', required=True)
 
+    parser.add_argument("-v", "--version", action="version", version=version(), help="Show version information")
+
     list_parser = subparsers.add_parser('list', help="List all generic passwords")
     list_parser.add_argument("-a", "--account", default=getpass.getuser(), help="Account name (default: current user)")  # updated: optional, default=current user
 
