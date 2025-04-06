@@ -143,95 +143,73 @@ def load_secure_config(ACCOUNT_NAME, SERVICE_NAME, store=False, filename="config
 package main
 
 import (
-    "os"
-    "os/exec"
-    "encoding/base64"
-    "io/ioutil"
-    "log"
-    "strings"
-    "encoding/json"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"log"
+	"os/exec"
+	"runtime"
+	"strings"
 )
 
-func loadSecureConfig(ACCOUNT_NAME, SERVICE_NAME string, store bool, filename string) (map[string]interface{}, error) {
-    if os.Getenv("GOOS") == "darwin" {
-        // macOS-specific code
-        cmd := exec.Command("security", "find-generic-password", "-a", ACCOUNT_NAME, "-s", "SC-"+SERVICE_NAME, "-w")
-        result, err := cmd.Output()
-        if err != nil {
-            log.Printf("Failed to run security command: %v", err)
-            os.Exit(1)
-        }
+func loadSecureConfig(accountName, serviceName string, store bool, filename string) (map[string]interface{}, error) {
+	var config map[string]interface{}
 
-        configJSONBytes := result
+	if runtime.GOOS == "darwin" {
+		// macOS-specific code
+		cmd := exec.Command("security", "find-generic-password", "-a", accountName, "-s", "SC-"+serviceName, "-w")
+		result, err := cmd.Output()
+		if err != nil {
+			return nil, errors.New("failed to run security command: " + err.Error())
+		}
 
-        configJSONStr, err := base64.StdEncoding.DecodeString(strings.TrimSpace(string(configJSONBytes)))
-        if err != nil {
-            log.Printf("Failed to decode configuration: %v", err)
-            os.Exit(1)
-        }
+		decodedBytes, err := base64.StdEncoding.DecodeString(strings.TrimSpace(string(result)))
+		if err != nil {
+			return nil, errors.New("failed to decode base64 configuration: " + err.Error())
+		}
 
-        var config map[string]interface{}
-        err = json.Unmarshal(configJSONStr, &config)
-        if err != nil {
-            log.Printf("Invalid JSON retrieved from Keychain: %v", err)
-            os.Exit(1)
-        }
+		if err := json.Unmarshal(decodedBytes, &config); err != nil {
+			return nil, errors.New("invalid JSON retrieved from Keychain: " + err.Error())
+		}
 
-        if store {
-            // Write to config.json if store is true
-            fw, err := os.Create("config.json")
-            if err != nil {
-                log.Printf("Error creating config file: %v", err)
-                os.Exit(1)
-            }
-            defer fw.Close()
+		if store {
+			if err := ioutil.WriteFile("config.json", decodedBytes, 0600); err != nil {
+				return nil, errors.New("error writing to config.json: " + err.Error())
+			}
+			log.Println("Secrets stored in config.json")
+		}
+	} else {
+		// Linux-specific code
+		if filename == "" {
+			return nil, errors.New("filename parameter must be provided for Linux environment")
+		}
 
-            _, err = fw.Write(configJSONStr)
-            if err != nil {
-                log.Printf("Error writing to config.json: %v", err)
-                os.Exit(1)
-            }
-            log.Println("Secrets stored in config.json")
-        }
+		content, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return nil, errors.New("error reading file: " + err.Error())
+		}
 
-        return config, nil
-    } else {
-        // Linux-specific code
-        if filename == "" {
-            log.Println("Filename parameter must be provided for Linux environment.")
-            os.Exit(1)
-        }
+		if err := json.Unmarshal(content, &config); err != nil {
+			return nil, errors.New("error loading configuration: " + err.Error())
+		}
+	}
 
-        content, err := ioutil.ReadFile(filename)
-        if err != nil {
-            log.Printf("Error reading file: %v", err)
-            os.Exit(1)
-        }
-
-        var config map[string]interface{}
-        err = json.Unmarshal(content, &config)
-        if err != nil {
-            log.Printf("Error loading configuration: %v", err)
-            os.Exit(1)
-        }
-
-        return config, nil
-    }
+	return config, nil
 }
 
 func main() {
-    ACCOUNT_NAME := "jack"
-    SERVICE_NAME := "llm"
-    store := false // Set to true if you want to store the config in a file
-    filename := "a" // Default filename for Linux
+	accountName := "jack"
+	serviceName := "llm"
+	store := false
+	filename := "a"
 
-    config, err := loadSecureConfig(ACCOUNT_NAME, SERVICE_NAME, store, filename)
-    if err != nil {
-        log.Fatalf("Error loading secure config: %v", err)
-    }
+	config, err := loadSecureConfig(accountName, serviceName, store, filename)
+	if err != nil {
+		log.Fatalf("Error loading secure config: %v", err)
+	}
 
-    // Do something with the config
-    log.Printf("Loaded config: %v", config)
+	log.Printf("Loaded config: %v", config)
 }
 ```
 
