@@ -130,10 +130,10 @@ def list_generic_passwords(service_filter=None):
         sys.exit(1)
 
 def version():
-    return "Secure Config Tool v1.0.1"
+    return "Secure Config Tool v1.0.2"
 
 def main():
-    parser = argparse.ArgumentParser(description="Tool to manage config files in OSX Keychain or from file in Linux.\nWARNING: Overwrite or delete operations do not require authentication!")
+    parser = argparse.ArgumentParser(prog="secure-config",description="Tool to manage config files in OSX Keychain or from file in Linux.",epilog="WARNING: Overwrite or delete operations do not require authentication!")
     
     subparsers = parser.add_subparsers(dest='command', required=True)
 
