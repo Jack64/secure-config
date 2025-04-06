@@ -88,13 +88,6 @@ def delete_secure_config(ACCOUNT_NAME, SERVICE_NAME):
 def list_generic_passwords(service_filter=None):
     if sys.platform == "darwin":
         try:
-            result = subprocess.run(
-                ["security", "find-generic-password", "-a", getpass.getuser(), "-g"],
-                capture_output=True,
-                text=True,
-                check=False  # -g returns non-zero exit status even on success
-            )
-
             keychain_dump = subprocess.run(
                 ["security", "dump-keychain"],
                 capture_output=True,
