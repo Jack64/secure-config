@@ -16,6 +16,10 @@ If you don't have pipx installed, install it by running:
 ```bash
 python3 -m pip install pipx
 python3 -m pipx ensurepath
+
+# OR
+
+brew install pipx
 ```
 Restart your terminal after running the above commands.
 
@@ -37,7 +41,7 @@ pipx uninstall secure-config
 
 ### Load Configuration
 ```bash
-python main.py load -s <SERVICE_NAME> [--account <ACCOUNT_NAME>] [--file <CONFIG_FILE>] [--store]
+secure-config load -s <SERVICE_NAME> [--account <ACCOUNT_NAME>] [--file <CONFIG_FILE>] [--store]
 ```
 - `--account`: Optional, defaults to the current user.
 - `--file`: Optional, specifies the configuration file (Linux only).
@@ -45,45 +49,45 @@ python main.py load -s <SERVICE_NAME> [--account <ACCOUNT_NAME>] [--file <CONFIG
 
 Example (macOS):
 ```bash
-python main.py load -s myService --store
+secure-config load -s myService --store
 ```
 Example (Linux):
 ```bash
-python main.py load -s myService --file config.json
+secure-config load -s myService --file config.json
 ```
 
 ### Store Configuration (macOS only)
 ```bash
-python main.py store -s <SERVICE_NAME> [--account <ACCOUNT_NAME>] -f <CONFIG_FILE>
+secure-config store -s <SERVICE_NAME> [--account <ACCOUNT_NAME>] -f <CONFIG_FILE>
 ```
 - `--account`: Optional, defaults to the current user.
 - `-f`: Specifies the configuration file to store.
 
 Example:
 ```bash
-python main.py store -s myService -f config.json
+secure-config store -s myService -f config.json
 ```
 
 ### List Generic Passwords (macOS only)
 ```bash
-python main.py list [--account <ACCOUNT_NAME>]
+secure-config list [--account <ACCOUNT_NAME>]
 ```
 - `--account`: Optional, defaults to the current user.
 
 Example:
 ```bash
-python main.py list
+secure-config list
 ```
 
 ### Delete a Secret (macOS only)
 ```bash
-python main.py delete -s <SERVICE_NAME> [--account <ACCOUNT_NAME>]
+secure-config delete -s <SERVICE_NAME> [--account <ACCOUNT_NAME>]
 ```
 - `--account`: Optional, defaults to the current user.
 
 Example:
 ```bash
-python main.py delete -s myService
+secure-config delete -s myService
 ```
 
 
