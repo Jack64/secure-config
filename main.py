@@ -4,6 +4,7 @@ import sys
 import argparse
 import logging
 import getpass  # new import for default user
+import os  # new import for file size check
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -42,6 +43,11 @@ def load_secure_config(ACCOUNT_NAME, SERVICE_NAME, store=False, filename="config
 
 def store_secure_config(ACCOUNT_NAME, SERVICE_NAME, filename):
     try:
+        # Check file size
+        if os.path.getsize(filename) > 31 * 1024:  # 31 KB
+            logging.error("File size is too large. Maximum allowed size is 31 KB.")
+            sys.exit(1)
+
         with open(filename, "r") as f:
             config_json_str = f.read()
 
@@ -124,7 +130,7 @@ def list_generic_passwords(service_filter=None):
         sys.exit(1)
 
 def version():
-    return "Secure Config Tool v1.0.0"
+    return "Secure Config Tool v1.0.1"
 
 def main():
     parser = argparse.ArgumentParser(description="Tool to manage config files in OSX Keychain or from file in Linux.\nWARNING: Overwrite or delete operations do not require authentication!")
